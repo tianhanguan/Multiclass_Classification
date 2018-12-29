@@ -1,0 +1,136 @@
+#Import useful modules
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+%matplotlib inline
+
+#Set directory and import the Letters data
+os.chdir('D:\MSc2\STA2101\Project')
+data = pd.read_csv('Letters.txt',header=None)
+#################################################################
+##Section 1: Data cleaning and Exploratory Data Analysis
+#Rename the columns 
+data.columns = ["Class"] + ["Feature" + str(num1) for num1 in range(1,17)]
+
+#Plot the Class Label distributions and the Feature distributions
+#Class label distribution
+y = data.iloc[:,0]
+label_dist = y.value_counts().sort_index() #create a table of counts
+label_dist.plot.bar()
+
+#Plot all 16 Feature distribution
+platte = ["silver","rosybrown","firebrick","sienna","sandybrown","tan","darkcyan","deepskyblue","royalblue","plum","orange",
+	"yellowgreen","dodgerblue","violet","indianred","lightsteelblue"]
+f = plt.figure(figsize=(13,13))
+for i in range(1,17): 
+	x = data.iloc[:,i]
+	plt.subplot(4, 4, i)
+	plt.hist(x,normed=True,bins=15,color=platte[i-1])
+	plt.title('Feature ' + str(i))
+
+#Check correlation between features using a heat map
+x = data.iloc[:,1:] #The explanatory variable
+sns.heatmap(x.corr())
+
+#Now create a new column of class labels in terms of  Numbers 1-26 using the original Capital Letters A-Z 
+data['Class2'] = data['Class'].astype("category")
+y = data['Class2'] #The response variable
+
+#Split the dataset into training (75%) and testing (25%) dataset
+train_x = x.iloc[:15000,:] 
+train_y = y[:15000]
+test_x = x.iloc[15000:,:] 
+test_y = y[15000:]
+#################################################################
+##Section 2: Analysis 1: One-vs-All VS One-vs-One
+#First construct a SVM classifier using the RBF kernel
+from sklearn.svm import SVC
+SVM = SVC(C=1,kernel='rbf',gamma='auto')
+#SVM.fit(train_x,train_y)
+########################
+#1. One-vs-All
+from sklearn.multiclass import OneVsRestClassifier
+OVA = OneVsRestClassifier(SVM)
+OVA.fit(train_x,train_y)
+y_pred = OVA.predict(test_x)
+print("The accuracy of the One-vs-All method is: ", 1-((test_y != y_pred).sum())/5000)
+########################
+#2. One-vs-One
+from sklearn.multiclass import OneVsOneClassifier
+OVO = OneVsOneClassifier(SVM)
+OVO.fit(train_x,train_y)
+y_pred = OVO.predict(test_x)
+print("The accuracy of the One-vs-One method is: ", 1-((test_y != y_pred).sum())/5000)
+
+#################################################################
+##Section 3: Analysis 2: Multiclass classification tools
+
+########################
+#Multinomial logistic regression
+from sklearn.linear_model import LogisticRegression
+MLR = LogisticRegression(C=1, solver='lbfgs', multi_class='multinomial')
+MLR.fit(train_x,train_y)
+
+y_pred = MLR.predict(test_x)
+print("The accuracy of the multinomial logistic regression classifier is: ", 1-((test_y != y_pred).sum())/5000)
+########################
+#K-nearest neighbors
+from sklearn.neighbors import KNeighborsClassifier
+#First choose the number of neighbors K using 5-fold cross validation
+K = 5 #Number of folds
+M = 10 #Maximum number of neighbors
+error = []
+for k in range(2,M+1):
+    error2 = []
+    for i in range(1,K+1): 
+        N = int(train_x.shape[0]/K)
+        validateX = train_x.iloc[N*(i-1):N*i,:]
+        validateY = train_y.iloc[N*(i-1):N*i]
+        trainX = train_x.iloc[0:N*(i-1),:].append(train_x.iloc[N*i:,:])
+        trainY = train_y.iloc[0:N*(i-1)].append(train_y.iloc[N*i:])
+        KNN = KNeighborsClassifier(n_neighbors=k)
+        KNN.fit(trainX, trainY) 
+        y_pred = KNN.predict(validateX)
+        error2.append(((validateY != y_pred).sum())/validateY.shape[0])
+    error.append(sum(error2)/len(error2))
+
+#Plot the results
+k = list(range(2, M+1, 1))
+plt.plot(k,error,color='green',marker='D')
+plt.xlabel('Number of neighbors')
+plt.ylabel('Average error - 10-fold Cross validation')
+
+
+#Then fit the KNN classifier
+k = 3
+KNN = KNeighborsClassifier(n_neighbors=k)
+KNN.fit(train_x, train_y) 
+y_pred = KNN.predict(test_x)
+print("The accuracy of the KNN classifier is: ", 1-((test_y != y_pred).sum())/5000)
+########################
+#Gaussian Naive Bayes
+from sklearn.naive_bayes import GaussianNB
+gnb = GaussianNB()
+gnb.fit(train_x,train_y)
+y_pred = gnb.predict(test_x)
+print("The accuracy of the Gaussian Naive Bayes classifier is: ", 1-((test_y != y_pred).sum())/5000)
+gnb.class_prior_ #check the prior
+#gnb.class_count_
+#gnb.theta_
+#gnb.sigma_
+######################
+#Random forest
+from sklearn.ensemble import RandomForestClassifier
+RF = RandomForestClassifier(n_estimators=10,max_features=8)
+RF.fit(train_x,train_y)
+y_pred = RF.predict(test_x)
+print("The accuracy of the Random Forest classifier is: ", 1-((test_y != y_pred).sum())/5000)
+######################
+#Multilayer perceptron
+from sklearn.neural_network import MLPClassifier
+MLP = MLPClassifier(solver='adam',hidden_layer_sizes=100)
+MLP.fit(train_x,train_y)
+y_pred = MLP.predict(test_x)
+print("The accuracy of the Multilayer Perceptron classifier is: ", 1-((test_y != y_pred).sum())/5000)
