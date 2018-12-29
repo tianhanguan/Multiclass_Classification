@@ -1,2 +1,2 @@
 # Multiclass_Classification
-Predict class labels using the Letter Image Recognition dataset
+Illustrate multiclass classification techniques using the Letter Image Recognition dataset
