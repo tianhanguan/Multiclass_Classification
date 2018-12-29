@@ -1,0 +1,9 @@
+Method	                              Prediction accuracy
+One-vs-One with SVM	              97.2%
+One-vs-All with SVM 	              97.0%
+Random forest	                      95.8%
+K-nearest neighbors 	              94.9%
+Neural networks (MLP)	              92.3%
+Multinomial logistic regression	      75.4%
+Gaussian naive bayes	              63.3%
+
