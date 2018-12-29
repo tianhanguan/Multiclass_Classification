@@ -1,0 +1,33 @@
+Response variable	Capital letter	A-Z (26 classes)
+Feature #1	horizontal position of box
+	Integer 0-15
+Feature #2	vertical position of box
+	Integer 0-15
+Feature #3	width of box
+	Integer 0-15
+Feature #4	height of box
+	Integer 0-15
+Feature #5	total # on pixels
+	Integer 0-15
+Feature #6	mean x of on pixels in box	
+	Integer 0-15
+Feature #7	mean y of on pixels in box
+	Integer 0-15
+Feature #8	mean x variance	
+	Integer 0-15
+Feature #9	mean y variance
+	Integer 0-15
+Feature #10	mean x y correlation
+	Integer 0-15
+Feature #11	mean of x * x * y
+	Integer 0-15
+Feature #12	mean of x * y * y
+	Integer 0-15
+Feature #13	mean edge count left to right
+	Integer 0-15
+Feature #14	correlation of x-ege with y
+	Integer 0-15
+Feature #15	mean edge count bottom to top	
+	Integer 0-15
+Feature #16	correlation of y-ege with x
+	Integer 0-15
